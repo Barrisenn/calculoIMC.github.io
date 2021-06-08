@@ -1,0 +1,22 @@
+body {
+  display: flex;
+  justify-content: center;
+}
+
+.container {
+  border: 2px solid blueviolet;
+  box-shadow: 0px 0px 15px;
+  padding: 15px;
+  background-color: #ddd;
+}
+
+.botao-calcular {
+  font-align: center;
+  font-size: 18px;
+  width: 100%;
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #1b2845;
+  color: white;
+  cursor: pointer;
+}
