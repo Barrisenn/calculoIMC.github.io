@@ -1,2 +1,2 @@
-# https://calculoIMC.github.io
+# https://barrisenn.github.io/calculoIMC.github.io/
 Calcule Seu IMC!!!
