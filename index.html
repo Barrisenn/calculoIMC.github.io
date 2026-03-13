@@ -1,32 +1,159 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-br" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#667eea">
+  <meta name="description" content="Calculadora de IMC com IA, gráfico de histórico e análise completa de saúde.">
+  <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="style.css">
-  <title>Calcule Seu IMC!</title>
+  <title>IMC Pro — Health Intelligence</title>
 </head>
 <body>
-  <div class="container">
-    <h1>Calcule Seu IMC!</h1>
-    <form>
-      <p>Digite Seu Peso:</p>
-      <div>
-      <input id="peso" type="number"/>
-      <span>Kg</span>  
+
+  <header class="header">
+    <div class="logo">⚡ IMC <strong>Pro</strong></div>
+    <button id="btnTheme" class="btn-icon" aria-label="Alternar tema" title="Alternar tema">🌙</button>
+  </header>
+
+  <main class="main">
+
+    <!-- ── Calculadora ── -->
+    <section class="card" id="cardCalculadora">
+      <h2 class="card-title">Seu Perfil de Saúde</h2>
+
+      <div class="grid-2">
+        <div class="campo">
+          <label for="idade">Idade</label>
+          <div class="input-grupo">
+            <input id="idade" type="number" min="2" max="120" placeholder="25">
+            <span>anos</span>
+          </div>
+          <small class="erro" id="erroIdade"></small>
+        </div>
+        <div class="campo">
+          <label>Sexo</label>
+          <div class="segmented" id="segSexo" role="group" aria-label="Sexo biológico">
+            <button class="seg-btn active" data-value="m">Masculino</button>
+            <button class="seg-btn" data-value="f">Feminino</button>
+          </div>
+        </div>
       </div>
-      <div>
-        <p>Digite Sua Altura:</p>
-        <input id="altura" type="number"/>
-        <span>Cm</span>
+
+      <div class="grid-2">
+        <div class="campo">
+          <label for="peso">Peso</label>
+          <div class="input-grupo">
+            <input id="peso" type="number" min="1" max="500" step="0.1" placeholder="70">
+            <span>kg</span>
+          </div>
+          <small class="erro" id="erroPeso"></small>
+        </div>
+        <div class="campo">
+          <label for="altura">Altura</label>
+          <div class="input-grupo">
+            <input id="altura" type="number" min="50" max="300" placeholder="175">
+            <span>cm</span>
+          </div>
+          <small class="erro" id="erroAltura"></small>
+        </div>
       </div>
-      <div>
-        <input id="btnCalcular" class="botao-calcular" type="button" value="Calcular"
+
+      <button id="btnCalcular" class="btn-primary">Calcular IMC</button>
+    </section>
+
+    <!-- ── Resultado ── -->
+    <section class="card oculto" id="cardResultado">
+      <div class="gauge-wrapper">
+        <div class="gauge-container">
+          <canvas id="gaugeCanvas"></canvas>
+          <div class="gauge-valor" id="imcValor">--</div>
+        </div>
+        <div class="gauge-info">
+          <div class="badge" id="imcBadge">--</div>
+          <p class="gauge-faixa" id="imcFaixa"></p>
+        </div>
       </div>
-    </form>
-    <div id="resultado"></div>
-  </div>
-  <script src="script.js"></script>  
+
+      <div class="stats-grid" id="statsGrid"></div>
+
+      <button id="btnIA" class="btn-ai">
+        🤖 Pedir Conselho ao Coach IA
+      </button>
+    </section>
+
+    <!-- ── AI Coach ── -->
+    <section class="card oculto" id="cardIA">
+      <h2 class="card-title">🤖 Coach de Saúde com IA</h2>
+      <p class="card-subtitle">Powered by Claude — Anthropic</p>
+
+      <div id="iaConfig">
+        <p class="text-muted">Para usar o Coach IA, insira sua chave da API Anthropic:</p>
+        <div class="input-grupo" style="margin-top:12px">
+          <input id="apiKey" type="password" placeholder="sk-ant-api03-...">
+        </div>
+        <small class="text-muted" style="margin-top:8px;display:block">
+          Armazenada apenas localmente no seu dispositivo.
+          <a href="https://console.anthropic.com" target="_blank" rel="noopener">Obter chave gratuita →</a>
+        </small>
+        <button id="btnSalvarKey" class="btn-primary" style="margin-top:16px">
+          Salvar e Consultar IA
+        </button>
+      </div>
+
+      <div id="iaResposta" class="ia-resposta oculto">
+        <div class="typing-indicator oculto" id="typingIndicator">
+          <span></span><span></span><span></span>
+        </div>
+        <div id="iaTexto" class="ia-texto"></div>
+        <div class="ia-actions oculto" id="iaActions">
+          <button id="btnNovaConsulta" class="btn-secondary">Nova Consulta</button>
+          <button id="btnTrocarKey" class="btn-ghost">Trocar chave API</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Histórico ── -->
+    <section class="card oculto" id="cardHistorico">
+      <h2 class="card-title">📈 Histórico de IMC</h2>
+      <div class="chart-wrapper">
+        <canvas id="chartCanvas"></canvas>
+      </div>
+      <ul id="listaHistorico" class="lista-historico"></ul>
+      <button id="btnLimpar" class="btn-danger">Limpar Histórico</button>
+    </section>
+
+    <!-- ── Tabela de Referência ── -->
+    <section class="card">
+      <h2 class="card-title">📊 Tabela de Referência da OMS</h2>
+      <div class="table-wrapper">
+        <table class="tabela-imc">
+          <thead>
+            <tr>
+              <th>IMC</th>
+              <th>Classificação</th>
+              <th>Risco à Saúde</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="row-baixo"><td>&lt; 18,5</td><td>Abaixo do peso</td><td>Moderado</td></tr>
+            <tr class="row-ideal"><td>18,5 – 24,9</td><td>Peso ideal ✓</td><td>Baixo</td></tr>
+            <tr class="row-leve"><td>25,0 – 29,9</td><td>Sobrepeso</td><td>Aumentado</td></tr>
+            <tr class="row-ob1"><td>30,0 – 34,9</td><td>Obesidade Grau I</td><td>Alto</td></tr>
+            <tr class="row-ob2"><td>35,0 – 39,9</td><td>Obesidade Grau II</td><td>Muito Alto</td></tr>
+            <tr class="row-ob3"><td>≥ 40,0</td><td>Obesidade Grau III</td><td>Extremo</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p>IMC Pro — Feito com ❤️ e Claude AI</p>
+    <p class="text-muted">Aplicativo educacional. Consulte sempre um profissional de saúde.</p>
+  </footer>
+
+  <script src="script.js"></script>
 </body>
 </html>

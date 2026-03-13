@@ -1,0 +1,20 @@
+{
+  "name": "IMC Pro — Health Intelligence",
+  "short_name": "IMC Pro",
+  "description": "Calculadora de IMC com IA, gráfico de histórico e análise completa de saúde.",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f0c29",
+  "theme_color": "#667eea",
+  "lang": "pt-BR",
+  "categories": ["health", "fitness"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23667eea'/><text y='72' x='50' text-anchor='middle' font-size='60' font-family='system-ui'>⚡</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
