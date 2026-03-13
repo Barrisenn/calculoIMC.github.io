@@ -10,23 +10,76 @@
 <body>
   <div class="container">
     <h1>Calcule Seu IMC!</h1>
-    <form>
-      <p>Digite Seu Peso:</p>
-      <div>
-      <input id="peso" type="number"/>
-      <span>Kg</span>  
+
+    <form id="formIMC">
+      <div class="campo">
+        <label for="peso">Peso:</label>
+        <div class="input-grupo">
+          <input id="peso" type="number" min="1" max="500" step="0.1" placeholder="Ex: 70" />
+          <span>kg</span>
+        </div>
+        <small class="erro" id="erroPeso"></small>
       </div>
-      <div>
-        <p>Digite Sua Altura:</p>
-        <input id="altura" type="number"/>
-        <span>Cm</span>
+
+      <div class="campo">
+        <label for="altura">Altura:</label>
+        <div class="input-grupo">
+          <input id="altura" type="number" min="50" max="300" step="1" placeholder="Ex: 175" />
+          <span>cm</span>
+        </div>
+        <small class="erro" id="erroAltura"></small>
       </div>
-      <div>
-        <input id="btnCalcular" class="botao-calcular" type="button" value="Calcular"
-      </div>
+
+      <input id="btnCalcular" class="botao-calcular" type="button" value="Calcular" />
     </form>
-    <div id="resultado"></div>
+
+    <div id="resultado" class="resultado oculto"></div>
+
+    <section class="tabela-referencia">
+      <h2>Tabela de Referência</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>IMC</th>
+            <th>Classificação</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="cor-baixo">
+            <td>Abaixo de 18,5</td>
+            <td>Abaixo do peso</td>
+          </tr>
+          <tr class="cor-ideal">
+            <td>18,5 – 24,9</td>
+            <td>Peso ideal</td>
+          </tr>
+          <tr class="cor-leve">
+            <td>25,0 – 29,9</td>
+            <td>Levemente acima do peso</td>
+          </tr>
+          <tr class="cor-ob1">
+            <td>30,0 – 34,9</td>
+            <td>Obesidade Grau I</td>
+          </tr>
+          <tr class="cor-ob2">
+            <td>35,0 – 39,9</td>
+            <td>Obesidade Grau II</td>
+          </tr>
+          <tr class="cor-ob3">
+            <td>40,0 ou mais</td>
+            <td>Obesidade Grau III</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="historico" id="secaoHistorico">
+      <h2>Histórico</h2>
+      <ul id="listaHistorico"></ul>
+      <button id="btnLimpar" class="botao-limpar">Limpar Histórico</button>
+    </section>
   </div>
-  <script src="script.js"></script>  
+
+  <script src="script.js"></script>
 </body>
 </html>

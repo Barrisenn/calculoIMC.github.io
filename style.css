@@ -1,22 +1,221 @@
+/* Reset e base */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 body {
+  min-height: 100vh;
   display: flex;
   justify-content: center;
+  align-items: flex-start;
+  padding: 24px 16px;
+  background-color: #f0f2f5;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #222;
 }
 
+/* Container principal */
 .container {
-  border: 2px solid blueviolet;
-  box-shadow: 0px 0px 15px;
-  padding: 15px;
-  background-color: #ddd;
+  width: 100%;
+  max-width: 540px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
+h1 {
+  text-align: center;
+  font-size: 1.6rem;
+  color: #1b2845;
+}
+
+h2 {
+  font-size: 1.1rem;
+  color: #1b2845;
+  margin-bottom: 10px;
+}
+
+/* Formulário */
+#formIMC {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.campo label {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.input-grupo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.input-grupo input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.input-grupo input:focus {
+  outline: none;
+  border-color: #1b2845;
+}
+
+.input-grupo span {
+  font-weight: 600;
+  color: #555;
+  min-width: 28px;
+}
+
+.erro {
+  color: #c0392b;
+  font-size: 0.82rem;
+  min-height: 16px;
+}
+
+/* Botão calcular */
 .botao-calcular {
-  font-align: center;
-  font-size: 18px;
+  font-size: 1rem;
+  font-weight: 700;
   width: 100%;
-  margin-top: 20px;
-  padding: 10px;
+  padding: 12px;
   background-color: #1b2845;
   color: white;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.botao-calcular:hover {
+  background-color: #263a63;
+}
+
+.botao-calcular:active {
+  transform: scale(0.98);
+}
+
+/* Resultado */
+.resultado {
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  padding: 14px 18px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+}
+
+.oculto {
+  display: none;
+}
+
+.imc-baixo  { background: #d6eaf8; border-color: #2980b9; color: #1a5276; }
+.imc-ideal  { background: #d5f5e3; border-color: #27ae60; color: #1e8449; }
+.imc-leve   { background: #fef9e7; border-color: #f1c40f; color: #9a7d0a; }
+.imc-ob1    { background: #fdebd0; border-color: #e67e22; color: #935116; }
+.imc-ob2    { background: #fadbd8; border-color: #e74c3c; color: #922b21; }
+.imc-ob3    { background: #f9ebea; border-color: #c0392b; color: #7b241c; }
+
+/* Tabela de referência */
+.tabela-referencia table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.tabela-referencia th,
+.tabela-referencia td {
+  padding: 8px 12px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+.tabela-referencia th {
+  background-color: #1b2845;
+  color: white;
+}
+
+.cor-baixo td { background: #d6eaf8; }
+.cor-ideal td { background: #d5f5e3; }
+.cor-leve  td { background: #fef9e7; }
+.cor-ob1   td { background: #fdebd0; }
+.cor-ob2   td { background: #fadbd8; }
+.cor-ob3   td { background: #f9ebea; }
+
+/* Histórico */
+.historico ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.historico li {
+  font-size: 0.83rem;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border-left: 4px solid transparent;
+}
+
+.historico li.imc-baixo { background: #d6eaf8; border-color: #2980b9; }
+.historico li.imc-ideal { background: #d5f5e3; border-color: #27ae60; }
+.historico li.imc-leve  { background: #fef9e7; border-color: #f1c40f; }
+.historico li.imc-ob1   { background: #fdebd0; border-color: #e67e22; }
+.historico li.imc-ob2   { background: #fadbd8; border-color: #e74c3c; }
+.historico li.imc-ob3   { background: #f9ebea; border-color: #c0392b; }
+
+/* Botão limpar */
+.botao-limpar {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background: transparent;
+  border: 2px solid #c0392b;
+  color: #c0392b;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.botao-limpar:hover {
+  background-color: #c0392b;
+  color: white;
+}
+
+/* Responsividade */
+@media (max-width: 400px) {
+  .container {
+    padding: 20px 14px;
+  }
+
+  h1 {
+    font-size: 1.3rem;
+  }
+
+  .tabela-referencia th,
+  .tabela-referencia td {
+    padding: 6px 8px;
+    font-size: 0.82rem;
+  }
 }
