@@ -662,6 +662,10 @@ function formatIATexto(text) {
 function setTheme(theme) {
   document.documentElement.dataset.theme = theme;
   $('btnTheme').textContent = theme === 'dark' ? '🌙' : '☀️';
+  // Sync menu theme item
+  const isDark = theme === 'dark';
+  $('menuTemaIcon').textContent = isDark ? '☀️' : '🌙';
+  $('menuTemaText').textContent  = isDark ? 'Modo claro' : 'Modo escuro';
   localStorage.setItem('imcTema', theme);
 
   // Redraw chart with new theme colors
@@ -669,7 +673,74 @@ function setTheme(theme) {
   if (h.length >= 2) drawChart(h);
 }
 
+// ─── Hamburger Menu ──────────────────────────
+function abrirMenu() {
+  $('menuDrawer').classList.add('open');
+  $('menuOverlay').classList.add('open');
+  $('btnMenu').setAttribute('aria-expanded', 'true');
+}
+
+function fecharMenu() {
+  $('menuDrawer').classList.remove('open');
+  $('menuOverlay').classList.remove('open');
+  $('btnMenu').setAttribute('aria-expanded', 'false');
+}
+
 // ─── Event listeners ─────────────────────────
+// ─── Hamburger Menu events ────────────────────
+$('btnMenu').addEventListener('click', abrirMenu);
+$('btnFecharMenu').addEventListener('click', fecharMenu);
+$('menuOverlay').addEventListener('click', fecharMenu);
+
+$('menuDrawer').addEventListener('click', e => {
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  fecharMenu();
+
+  const action = btn.dataset.action;
+
+  if (action === 'coach') {
+    const cardIA = $('cardIA');
+    cardIA.classList.remove('oculto');
+    cardIA.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const existingKey = localStorage.getItem('imcApiKey');
+    if (existingKey && $('iaTexto').textContent === '' && state.lastResult) consultarIA();
+
+  } else if (action === 'trocar-key') {
+    $('cardIA').classList.remove('oculto');
+    localStorage.removeItem('imcApiKey');
+    $('iaConfig').classList.remove('oculto');
+    $('iaResposta').classList.add('oculto');
+    $('iaTexto').textContent = '';
+    $('apiKey').value = '';
+    $('cardIA').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  } else if (action === 'historico') {
+    const card = $('cardHistorico');
+    card.classList.remove('oculto');
+    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  } else if (action === 'limpar') {
+    if (confirm('Deseja apagar todo o histórico de IMC?')) {
+      localStorage.removeItem('imcHistorico');
+      renderHistorico();
+    }
+
+  } else if (action === 'tabela') {
+    document.querySelector('.tabela-imc').closest('section')
+      .scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  } else if (action === 'tema') {
+    const current = document.documentElement.dataset.theme;
+    setTheme(current === 'dark' ? 'light' : 'dark');
+  }
+});
+
+// Close menu on Escape key
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') fecharMenu();
+});
+
 $('btnCalcular').addEventListener('click', calcular);
 
 // Enter key triggers calculation
