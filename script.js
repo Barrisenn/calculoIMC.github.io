@@ -475,16 +475,14 @@ async function consultarIA() {
   $('cardIA').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
+        'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: 'llama-3.3-70b-versatile',
         max_tokens: 800,
         stream: true,
         messages: [{ role: 'user', content: buildPrompt(state.lastResult) }],
@@ -516,9 +514,8 @@ async function consultarIA() {
         if (raw === '[DONE]') break;
         try {
           const parsed = JSON.parse(raw);
-          if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
-            iaTexto.textContent += parsed.delta.text;
-          }
+          const text = parsed.choices?.[0]?.delta?.content;
+          if (text) iaTexto.textContent += text;
         } catch { /* ignore parse errors */ }
       }
     }
@@ -583,7 +580,7 @@ $('btnTheme').addEventListener('click', () => {
 // AI: save key and consult
 $('btnSalvarKey').addEventListener('click', () => {
   const key = $('apiKey').value.trim();
-  if (!key.startsWith('sk-ant')) {
+  if (!key.startsWith('gsk_')) {
     $('apiKey').style.borderColor = '#ef4444';
     setTimeout(() => ($('apiKey').style.borderColor = ''), 2000);
     return;
