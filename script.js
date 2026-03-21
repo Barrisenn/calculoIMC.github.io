@@ -28,6 +28,8 @@ const IMC_MIN = 10, IMC_MAX = 45;
 const state = {
   sexo: 'm',
   lastResult: null,
+  conversationHistory: [], // stores {role, content} for the Groq API
+  chatBusy: false,
 };
 
 // ─── Utilities ───────────────────────────────
@@ -456,15 +458,71 @@ Forneça uma resposta estruturada com:
 Use linguagem calorosa, informal mas profissional. Máximo 280 palavras.`;
 }
 
+async function streamIAResponse(apiKey, messages, onChunk) {
+  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      max_tokens: 800,
+      stream: true,
+      messages,
+    }),
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error?.message || `Erro ${response.status}`);
+  }
+
+  const reader  = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let fullText = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop();
+
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const raw = line.slice(6).trim();
+      if (raw === '[DONE]') break;
+      try {
+        const parsed = JSON.parse(raw);
+        const text = parsed.choices?.[0]?.delta?.content;
+        if (text) { fullText += text; onChunk(text); }
+      } catch { /* ignore */ }
+    }
+  }
+
+  return fullText;
+}
+
 async function consultarIA() {
   const apiKey = localStorage.getItem('imcApiKey');
   if (!apiKey || !state.lastResult) return;
 
-  const iaConfig   = $('iaConfig');
-  const iaResposta = $('iaResposta');
-  const typing     = $('typingIndicator');
-  const iaTexto    = $('iaTexto');
-  const iaActions  = $('iaActions');
+  const iaConfig      = $('iaConfig');
+  const iaResposta    = $('iaResposta');
+  const typing        = $('typingIndicator');
+  const iaTexto       = $('iaTexto');
+  const iaActions     = $('iaActions');
+  const chatMensagens = $('chatMensagens');
+  const chatInputArea = $('chatInputArea');
+
+  // Reset chat for a fresh consultation
+  state.conversationHistory = [];
+  chatMensagens.innerHTML = '';
+  chatMensagens.classList.add('oculto');
+  chatInputArea.classList.add('oculto');
 
   iaConfig.classList.add('oculto');
   iaResposta.classList.remove('oculto');
@@ -474,61 +532,113 @@ async function consultarIA() {
 
   $('cardIA').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-  try {
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        max_tokens: 800,
-        stream: true,
-        messages: [{ role: 'user', content: buildPrompt(state.lastResult) }],
-      }),
-    });
+  const initialPrompt = buildPrompt(state.lastResult);
 
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      throw new Error(err.error?.message || `Erro ${response.status}`);
-    }
+  try {
+    let rawText = '';
+    const fullText = await streamIAResponse(
+      apiKey,
+      [{ role: 'user', content: initialPrompt }],
+      chunk => { rawText += chunk; iaTexto.textContent = rawText; }
+    );
 
     typing.classList.add('oculto');
-
-    const reader  = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop(); // keep incomplete line
-
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        const raw = line.slice(6).trim();
-        if (raw === '[DONE]') break;
-        try {
-          const parsed = JSON.parse(raw);
-          const text = parsed.choices?.[0]?.delta?.content;
-          if (text) iaTexto.textContent += text;
-        } catch { /* ignore parse errors */ }
-      }
-    }
-
-    // Format final text
-    iaTexto.innerHTML = formatIATexto(iaTexto.textContent);
+    iaTexto.innerHTML = formatIATexto(fullText);
     iaActions.classList.remove('oculto');
+
+    // Seed conversation history with the full exchange
+    state.conversationHistory = [
+      { role: 'user',      content: initialPrompt },
+      { role: 'assistant', content: fullText },
+    ];
+
+    // Reveal chat input for follow-up questions
+    chatMensagens.classList.remove('oculto');
+    chatInputArea.classList.remove('oculto');
+    $('chatInput').focus();
 
   } catch (err) {
     typing.classList.add('oculto');
     iaTexto.innerHTML = `<span style="color:#f87171">⚠️ ${err.message}</span><br><span class="text-muted">Verifique sua chave de API e tente novamente.</span>`;
     iaActions.classList.remove('oculto');
   }
+}
+
+// ─── Chat: send follow-up message ────────────
+function appendChatBubble(role, htmlContent) {
+  const chatMensagens = $('chatMensagens');
+  const bubble = document.createElement('div');
+  bubble.className = `chat-bubble ${role}`;
+  const inner = document.createElement('div');
+  inner.className = 'chat-bubble-inner';
+  inner.innerHTML = htmlContent;
+  bubble.appendChild(inner);
+  chatMensagens.appendChild(bubble);
+  chatMensagens.scrollTop = chatMensagens.scrollHeight;
+  return inner;
+}
+
+function appendChatTyping() {
+  const chatMensagens = $('chatMensagens');
+  const el = document.createElement('div');
+  el.className = 'chat-typing';
+  el.id = 'chatTyping';
+  el.innerHTML = '<span></span><span></span><span></span>';
+  chatMensagens.appendChild(el);
+  chatMensagens.scrollTop = chatMensagens.scrollHeight;
+  return el;
+}
+
+async function enviarMensagem() {
+  if (state.chatBusy) return;
+  const apiKey = localStorage.getItem('imcApiKey');
+  if (!apiKey || state.conversationHistory.length === 0) return;
+
+  const input = $('chatInput');
+  const texto = input.value.trim();
+  if (!texto) return;
+
+  input.value = '';
+  input.style.height = '';
+  state.chatBusy = true;
+  $('btnEnviarChat').disabled = true;
+
+  // Show user bubble
+  appendChatBubble('user', escapeHTML(texto));
+
+  // Add to history
+  state.conversationHistory.push({ role: 'user', content: texto });
+
+  // Show typing indicator
+  const typingEl = appendChatTyping();
+
+  try {
+    let rawText = '';
+    const aiInner = null; // will be created after typing removed
+    const fullText = await streamIAResponse(
+      apiKey,
+      state.conversationHistory,
+      () => {} // we'll render after completion for simplicity
+    );
+
+    typingEl.remove();
+    appendChatBubble('ai', formatIATexto(fullText));
+    $('chatMensagens').scrollTop = $('chatMensagens').scrollHeight;
+
+    state.conversationHistory.push({ role: 'assistant', content: fullText });
+
+  } catch (err) {
+    typingEl.remove();
+    appendChatBubble('ai', `<span style="color:#f87171">⚠️ ${err.message}</span>`);
+  } finally {
+    state.chatBusy = false;
+    $('btnEnviarChat').disabled = false;
+    input.focus();
+  }
+}
+
+function escapeHTML(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
 }
 
 function formatIATexto(text) {
@@ -609,7 +719,28 @@ $('btnIA').addEventListener('click', () => {
 $('btnNovaConsulta').addEventListener('click', () => {
   $('iaTexto').textContent = '';
   $('iaActions').classList.add('oculto');
+  $('chatMensagens').innerHTML = '';
+  $('chatMensagens').classList.add('oculto');
+  $('chatInputArea').classList.add('oculto');
+  state.conversationHistory = [];
   consultarIA();
+});
+
+// Chat: send button
+$('btnEnviarChat').addEventListener('click', enviarMensagem);
+
+// Chat: Enter to send (Shift+Enter for newline)
+$('chatInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    enviarMensagem();
+  }
+});
+
+// Chat: auto-resize textarea
+$('chatInput').addEventListener('input', function () {
+  this.style.height = '';
+  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
 });
 
 // AI: change key
