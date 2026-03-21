@@ -601,6 +601,7 @@ body {
 }
 
 .chat-textarea::placeholder { color: var(--text-muted); }
+.chat-textarea:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .btn-chat-send {
   flex-shrink: 0;
