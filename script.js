@@ -515,14 +515,13 @@ async function consultarIA() {
   const typing        = $('typingIndicator');
   const iaTexto       = $('iaTexto');
   const iaActions     = $('iaActions');
+  const chatSection   = $('chatSection');
   const chatMensagens = $('chatMensagens');
-  const chatInputArea = $('chatInputArea');
 
-  // Reset chat for a fresh consultation
+  // Reset
   state.conversationHistory = [];
   chatMensagens.innerHTML = '';
-  chatMensagens.classList.add('oculto');
-  chatInputArea.classList.add('oculto');
+  chatSection.classList.add('oculto');
 
   iaConfig.classList.add('oculto');
   iaResposta.classList.remove('oculto');
@@ -546,16 +545,17 @@ async function consultarIA() {
     iaTexto.innerHTML = formatIATexto(fullText);
     iaActions.classList.remove('oculto');
 
-    // Seed conversation history with the full exchange
+    // Seed conversation history
     state.conversationHistory = [
       { role: 'user',      content: initialPrompt },
       { role: 'assistant', content: fullText },
     ];
 
-    // Reveal chat input for follow-up questions
-    chatMensagens.classList.remove('oculto');
-    chatInputArea.classList.remove('oculto');
-    $('chatInput').focus();
+    // Reveal chat section and scroll to it
+    chatSection.classList.remove('oculto');
+    setTimeout(() => {
+      $('chatInput').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
 
   } catch (err) {
     typing.classList.add('oculto');
@@ -720,8 +720,7 @@ $('btnNovaConsulta').addEventListener('click', () => {
   $('iaTexto').textContent = '';
   $('iaActions').classList.add('oculto');
   $('chatMensagens').innerHTML = '';
-  $('chatMensagens').classList.add('oculto');
-  $('chatInputArea').classList.add('oculto');
+  $('chatSection').classList.add('oculto');
   state.conversationHistory = [];
   consultarIA();
 });

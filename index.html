@@ -108,15 +108,19 @@
         <div id="iaTexto" class="ia-texto"></div>
 
         <!-- Chat interativo pós-feedback -->
-        <div id="chatMensagens" class="chat-mensagens oculto"></div>
-
-        <div id="chatInputArea" class="chat-input-area oculto">
-          <textarea id="chatInput" class="chat-textarea" placeholder="Pergunte ao coach..." rows="1"></textarea>
-          <button id="btnEnviarChat" class="btn-chat-send" aria-label="Enviar mensagem">&#10148;</button>
+        <div id="chatSection" class="chat-section oculto">
+          <div class="chat-divider">
+            <span>💬 Converse com o coach</span>
+          </div>
+          <div id="chatMensagens" class="chat-mensagens"></div>
+          <div id="chatInputArea" class="chat-input-area">
+            <textarea id="chatInput" class="chat-textarea" placeholder="Digite sua pergunta aqui..." rows="1"></textarea>
+            <button id="btnEnviarChat" class="btn-chat-send" aria-label="Enviar mensagem">&#10148;</button>
+          </div>
         </div>
 
         <div class="ia-actions oculto" id="iaActions">
-          <button id="btnNovaConsulta" class="btn-secondary">Nova Consulta</button>
+          <button id="btnNovaConsulta" class="btn-secondary">Nova Análise</button>
           <button id="btnTrocarKey" class="btn-ghost">Trocar chave API</button>
         </div>
       </div>
