@@ -515,13 +515,17 @@ async function consultarIA() {
   const typing        = $('typingIndicator');
   const iaTexto       = $('iaTexto');
   const iaActions     = $('iaActions');
-  const chatSection   = $('chatSection');
   const chatMensagens = $('chatMensagens');
 
-  // Reset
+  const chatInput     = $('chatInput');
+  const btnEnviarChat = $('btnEnviarChat');
+
+  // Reset state
   state.conversationHistory = [];
   chatMensagens.innerHTML = '';
-  chatSection.classList.add('oculto');
+  chatInput.disabled = true;
+  btnEnviarChat.disabled = true;
+  chatInput.placeholder = 'Aguardando resposta do coach...';
 
   iaConfig.classList.add('oculto');
   iaResposta.classList.remove('oculto');
@@ -551,16 +555,17 @@ async function consultarIA() {
       { role: 'assistant', content: fullText },
     ];
 
-    // Reveal chat section and scroll to it
-    chatSection.classList.remove('oculto');
-    setTimeout(() => {
-      $('chatInput').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 300);
+    // Enable chat input
+    chatInput.disabled = false;
+    btnEnviarChat.disabled = false;
+    chatInput.placeholder = 'Digite sua pergunta aqui...';
+    setTimeout(() => chatInput.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
 
   } catch (err) {
     typing.classList.add('oculto');
     iaTexto.innerHTML = `<span style="color:#f87171">⚠️ ${err.message}</span><br><span class="text-muted">Verifique sua chave de API e tente novamente.</span>`;
     iaActions.classList.remove('oculto');
+    chatInput.placeholder = 'Erro — tente uma nova análise.';
   }
 }
 
@@ -720,7 +725,6 @@ $('btnNovaConsulta').addEventListener('click', () => {
   $('iaTexto').textContent = '';
   $('iaActions').classList.add('oculto');
   $('chatMensagens').innerHTML = '';
-  $('chatSection').classList.add('oculto');
   state.conversationHistory = [];
   consultarIA();
 });
