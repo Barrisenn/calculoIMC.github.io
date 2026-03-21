@@ -510,6 +510,8 @@ async function consultarIA() {
   const apiKey = localStorage.getItem('imcApiKey');
   if (!apiKey || !state.lastResult) return;
 
+  $('iaEspera').classList.add('oculto');
+
   const iaConfig      = $('iaConfig');
   const iaResposta    = $('iaResposta');
   const typing        = $('typingIndicator');
@@ -793,10 +795,17 @@ $('btnIA').addEventListener('click', () => {
 
 // AI: new consultation
 $('btnNovaConsulta').addEventListener('click', () => {
-  $('iaTexto').textContent = '';
+  $('iaTexto').innerHTML = '';
   $('iaActions').classList.add('oculto');
   $('chatMensagens').innerHTML = '';
+  $('chatArea').classList.add('oculto');
   state.conversationHistory = [];
+  $('iaEspera').classList.remove('oculto');
+});
+
+// AI: initiate consultation from waiting state
+$('btnIniciarConsulta').addEventListener('click', () => {
+  $('iaEspera').classList.add('oculto');
   consultarIA();
 });
 
